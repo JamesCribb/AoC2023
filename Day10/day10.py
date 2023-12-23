@@ -56,13 +56,18 @@ def PopulateInput(filename):
 
 def GenerateLoop(startType):
     # 1. Find the start position and populate grid
+    vertices = []
     startPos = None
+    # global grid
     for y, row in enumerate(grid):
         for x, cell in enumerate(row):
             if cell == 'S':
                 startPos = (x, y, startType)
                 grid[y][x] = startType
                 print(f'S at x={x}, y={y}')
+
+    if startType in ['L', 'J', '7', 'F']:
+        vertices.append((startPos[0], startPos[1]))
 
     # 2. Now we can just traverse the loop until we get back to startPos,
     #    then divide by 2
@@ -81,40 +86,51 @@ def GenerateLoop(startType):
             currentPos = revised[0]
             loop.append(currentPos)
             count += 1
+            if grid[currentPos[1]][currentPos[0]] in ['L', 'J', '7', 'F']:
+                vertices.append((currentPos[0], currentPos[1]))
         else:
             break # done
         # print(f'Moved to {currentPos}\n')
         if count % 100 == 0: print(f'Done {count}')
-    return loop
+    return loop, vertices
 
-def Day11(filename, startType):
+def Determinant(v1, v2):
+    d = (v1[0]*v2[1]) - (v1[1]*v2[0])
+    # print(f'Determinant of {v1} and {v2} is {d}')
+    return d
+
+def Area(vertices):
+    result = 0
+    for i in range(len(vertices)):
+        # print(f'i={i}')
+        # print(f'(i+1)%len(vertices)={(i+1)%len(vertices)}')
+        result += Determinant(vertices[i], vertices[(i+1)%len(vertices)])
+    # print(result)
+    result /= 2
+    # print(result)
+    return result    
+
+def Day10(filename, startType):
     PopulateInput(filename)
-    loop = GenerateLoop(startType)
-    print(f'Size of loop = {len(loop)}')
-    print(f'Furthest position = {len(loop)/2}')
+    loop, vertices = GenerateLoop(startType)
+    perimeter = len(loop)
+    print(f'Size of loop = {perimeter}')
+    print(f'Furthest position = {perimeter/2}')
 
-    # Expand the grid by transforming each cell to a 3*3 matrix
-    # 
+    # # Part 2
+    # print()
+    # PrintGrid(grid)
+    # for v in vertices:
+    #     print(v)
 
-    # WIP
-    print()
-    PrintGrid(grid)
+    area = abs(Area(vertices))
+    print(f'Area = {area}')
+    print(f'Enclosed Tiles = {area - (perimeter/2) + 1}')
 
-Day11('test.txt', 'F')
+# Day10('test.txt', 'F')
+# Day10('test_1.txt', 'F')
+# Day10('test_2.txt', 'F')
+# Day10('test_3.txt', 'F')
+# Day10('test_4.txt', '7')
+Day10('input.txt', '|')
 
-# def Determinant(v1, v2):
-#     d = (v1[0]*v2[1]) - (v1[1]*v2[0])
-#     print(f'Determinant of {v1} and {v2} is {d}')
-#     return d
-
-# def Area(vertices):
-#     result = 0
-#     for i in range(len(vertices)):
-#         print(f'i={i}')
-#         print(f'(i+1)%len(vertices)={(i+1)%len(vertices)}')
-#         result += Determinant(vertices[i], vertices[(i+1)%len(vertices)])
-#     print(result)
-#     result /= 2
-#     print(result)
-#     return result    
-    

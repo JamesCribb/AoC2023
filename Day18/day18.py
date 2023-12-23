@@ -1,9 +1,8 @@
-
-# def Determinant(v1, v2):
-#     return (v1[0] * v2[1]) - (v1[1] * v2[0])
-
 import collections
 import math
+
+def Determinant(v1, v2):
+    return (v1[0] * v2[1]) - (v1[1] * v2[0])
 
 def PrintGrid(grid):
     for row in grid:
@@ -52,10 +51,18 @@ def Day18():
         lines = [line.strip() for line in f.readlines()]
         for line in lines:
             toks = line.split(' ')
-            dir = toks[0]
-            length = int(toks[1])
-            colour = toks[2] # unused so far...
-            instructions.append((dir, length, colour))
+
+            # # Part 1
+            # dir = toks[0]
+            # length = int(toks[1])
+            
+            # Part 2
+            hexCode = toks[2]
+            dirs = 'RDLU'
+            dir = dirs[int(hexCode[-2])]
+            length = int(hexCode[2:-2], 16)
+            
+            instructions.append((dir, length))
     
     vertices = [(0, 0)]
     for instr in instructions:
@@ -77,78 +84,85 @@ def Day18():
     # for v in vertices:
     #     print(v)
 
-    # area = 0
-    # for i in range(len(vertices)):
-    #     det = Determinant(vertices[i], vertices[(i + 1) % len(vertices)])
-    #     print(f'Determinant of {vertices[i]} and {vertices[(i + 1) % len(vertices)]} = {det}')
-    #     area += det
-    # area /= 2
-    # print(f'Area = {area}')
+    # Turns out this is Pick's formula
+    # ...however I worked it out by drawing the test input and staring at it for a long time
+    area = 0
+    for i in range(len(vertices)):
+        det = Determinant(vertices[i], vertices[(i + 1) % len(vertices)])
+        # print(f'Determinant of {vertices[i]} and {vertices[(i + 1) % len(vertices)]} = {det}')
+        area += det
+    area /= 2
+    for instruction in instructions:
+        if instruction[0] in ['D', 'R']:
+            area += instruction[1]
+    area += 1
+    print(f'Area = {area}')
 
-    minX = math.inf
-    minY = math.inf
-    maxX = -math.inf
-    maxY = -math.inf
-    for v in vertices:
-        minX = min(minX, v[0])
-        minY = min(minY, v[1])
-        maxX = max(maxX, v[0])
-        maxY = max(maxY, v[1])
-    print(f'minX = {minX}, minY = {minY}')
-    print(f'maxX = {maxX}, maxY = {maxY}')
-    # Transform vertices so that min(x) = 1 and min(y) = 1
-    for i, v in enumerate(vertices):
-        vertices[i] = (v[0] - (minX-1)), (v[1] - (minY-1))
-    # Also transform maximums
-    maxX -= minX
-    maxY -= minY
 
-    grid = []
-    for _ in range(maxY+3):
-        grid.append([])
-        for _ in range(maxX+3):
-            grid[-1].append('.')
+    # minX = math.inf
+    # minY = math.inf
+    # maxX = -math.inf
+    # maxY = -math.inf
+    # for v in vertices:
+    #     minX = min(minX, v[0])
+    #     minY = min(minY, v[1])
+    #     maxX = max(maxX, v[0])
+    #     maxY = max(maxY, v[1])
+    # print(f'minX = {minX}, minY = {minY}')
+    # print(f'maxX = {maxX}, maxY = {maxY}')
+    # # Transform vertices so that min(x) = 1 and min(y) = 1
+    # for i, v in enumerate(vertices):
+    #     vertices[i] = (v[0] - (minX-1)), (v[1] - (minY-1))
+    # # Also transform maximums
+    # maxX -= minX
+    # maxY -= minY
 
-    # Mark edges
-    for i in range(len(vertices)-1):
-        v1 = vertices[i]
-        v2 = vertices[i+1]
-        for x in range(min(v1[0], v2[0]), max(v1[0], v2[0])+1):
-            grid[v1[1]][x] = '#'
-        for y in range(min(v1[1], v2[1]), max(v1[1], v2[1])+1):
-            grid[y][v1[0]] = '#'
+    # grid = []
+    # for _ in range(maxY+3):
+    #     grid.append([])
+    #     for _ in range(maxX+3):
+    #         grid[-1].append('.')
+
+    # # Mark edges
+    # for i in range(len(vertices)-1):
+    #     v1 = vertices[i]
+    #     v2 = vertices[i+1]
+    #     for x in range(min(v1[0], v2[0]), max(v1[0], v2[0])+1):
+    #         grid[v1[1]][x] = '#'
+    #     for y in range(min(v1[1], v2[1]), max(v1[1], v2[1])+1):
+    #         grid[y][v1[0]] = '#'
     
-    print(f'Grid = {len(grid[0])} * {len(grid)}')
-    # PrintGrid(grid)
+    # print(f'Grid = {len(grid[0])} * {len(grid)}')
+    # # PrintGrid(grid)
 
-    # Starting from the top-left, mark all empty spaces
-    count = 0
-    unfilled = set()
-    unfilled.add((0, 0))
-    marked = set() # DEBUG
-    while len(unfilled) > 0:
-        cell = unfilled.pop()
-        grid[cell[1]][cell[0]] = 'O'
-        if cell in marked:
-            print(f'Cell: {cell}')
-            assert False
-        marked.add(cell)
-        # print(f'Checked {cell}')
-        for neighbour in GetUnfilledNeighbours(grid, cell):
-            unfilled.add(neighbour)
-        count += 1
-        if count % 1000 == 0:
-            print(f'Marked {count} unfilled spaces')
+    # # Starting from the top-left, mark all empty spaces
+    # count = 0
+    # unfilled = set()
+    # unfilled.add((0, 0))
+    # marked = set() # DEBUG
+    # while len(unfilled) > 0:
+    #     cell = unfilled.pop()
+    #     grid[cell[1]][cell[0]] = 'O'
+    #     if cell in marked:
+    #         print(f'Cell: {cell}')
+    #         assert False
+    #     marked.add(cell)
+    #     # print(f'Checked {cell}')
+    #     for neighbour in GetUnfilledNeighbours(grid, cell):
+    #         unfilled.add(neighbour)
+    #     count += 1
+    #     if count % 1000 == 0:
+    #         print(f'Marked {count} unfilled spaces')
 
-    # PrintGrid(grid)
+    # # PrintGrid(grid)
 
-    filledArea = len(grid[0]) * len(grid)
-    for row in grid:
-        for cell in row:
-            if cell == 'O':
-                filledArea -= 1
+    # filledArea = len(grid[0]) * len(grid)
+    # for row in grid:
+    #     for cell in row:
+    #         if cell == 'O':
+    #             filledArea -= 1
 
-    print(f'Filled area: {filledArea}')
+    # print(f'Filled area: {filledArea}')
 
     # # Count filled area
     # count = 0
